@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
 class TextVisualizer extends StatelessWidget {
-  final List<String> texts;
-  final int index;
+  final String text;
 
-  TextVisualizer(this.texts, this.index);
+  TextVisualizer(this.text);
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      texts[index],
+      text,
       textAlign: TextAlign.center,
       style: TextStyle(fontSize: 25),
     );
