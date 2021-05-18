@@ -32,10 +32,13 @@ class Chart extends StatelessWidget {
         0, (previousValue, element) => previousValue + element['amount']);
   }
 
-  Chart(this.recentTransactions);
+  Chart(this.recentTransactions) {
+    print('constructor chart');
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('build() chart');
     final double totalSpent = maxSpending;
     return Card(
       elevation: 6,
