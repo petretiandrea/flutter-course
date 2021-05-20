@@ -1,5 +1,6 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
-import 'package:flutter_course_1/providers/orders_prodiver.dart';
 
 class CartItem {
   final String id;
@@ -14,11 +15,17 @@ class CartItem {
     @required this.price,
   });
 
-  CartItem increaseQuantity({int by = 1}) {
+  CartItem increaseQuantity({int by = 1}) =>
+      this.copyWith(title: title, quantity: quantity + by, price: price);
+
+  CartItem removeSingleQuantity() =>
+      this.copyWith(title: title, quantity: max(0, quantity - 1), price: price);
+
+  CartItem copyWith({String title, int quantity, double price}) {
     return CartItem(
       id: id,
       title: title,
-      quantity: quantity + by,
+      quantity: quantity,
       price: price,
     );
   }
@@ -55,6 +62,20 @@ class Cart with ChangeNotifier {
 
   void removeItem(String cartId) {
     _items.removeWhere((_, item) => item.id == cartId);
+    notifyListeners();
+  }
+
+  void removeItemByProduct(String productId) {
+    if (!_items.containsKey(productId)) return;
+
+    final item = _items[productId].removeSingleQuantity();
+
+    if (item.quantity > 0) {
+      _items[productId] = item;
+    } else {
+      _items.remove(productId);
+    }
+
     notifyListeners();
   }
 

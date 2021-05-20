@@ -43,8 +43,25 @@ class ProductsProvider with ChangeNotifier {
   List<Product> get favoriteProducts =>
       List.unmodifiable(_products.where((e) => e.isFavorite).toList());
 
-  void addProduct(Product product) {
-    _products.add(product);
+  void _addProduct(Product product) {
+    _products.add(product.copyWith(
+      id: DateTime.now().toString(),
+    ));
+    notifyListeners();
+  }
+
+  void addOrUpdateProduct(Product product) {
+    final index = _products.indexWhere((element) => element.id == product.id);
+    if (index >= 0) {
+      _products[index] = product.copyWith();
+    } else {
+      _addProduct(product);
+    }
+    notifyListeners();
+  }
+
+  void deleteProduct(String id) {
+    _products.removeWhere((element) => element.id == id);
     notifyListeners();
   }
 

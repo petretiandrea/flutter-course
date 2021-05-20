@@ -26,6 +26,28 @@ class CartItem extends StatelessWidget {
         }
       },
       direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          return showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text('Are you sure?'),
+              content: Text('Do you want remote the item from the cart?'),
+              actions: [
+                TextButton(
+                  child: Text('No'),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+                TextButton(
+                  child: Text('Yes'),
+                  onPressed: () => Navigator.of(context).pop(true),
+                )
+              ],
+            ),
+          );
+        }
+        return Future.value(false);
+      },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
         child: Padding(

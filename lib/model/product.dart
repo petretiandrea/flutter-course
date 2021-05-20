@@ -10,6 +10,13 @@ class Product with ChangeNotifier {
 
   bool get isFavorite => _isFavorite;
 
+  Product.empty()
+      : id = "-1",
+        title = "",
+        description = "",
+        price = 0,
+        imageUrl = "";
+
   Product({
     @required this.id,
     @required this.title,
@@ -22,5 +29,21 @@ class Product with ChangeNotifier {
   void toggleFavorite() {
     this._isFavorite = !this.isFavorite;
     notifyListeners();
+  }
+
+  Product copyWith(
+      {String id,
+      String title,
+      String description,
+      double price,
+      String imageUrl}) {
+    return Product(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      imageUrl: imageUrl ?? this.imageUrl,
+      isFavorite: this.isFavorite,
+    );
   }
 }
