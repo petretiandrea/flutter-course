@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_course_1/providers/cart_prodiver.dart';
 import 'package:flutter_course_1/providers/products_provider.dart';
 import 'package:flutter_course_1/screens/cart_screen.dart';
@@ -17,6 +18,18 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavorite = false;
+  var _isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
+      setState(() => _isLoading = true);
+      await Provider.of<ProductsProvider>(context, listen: false)
+          .loadProducts();
+      setState(() => _isLoading = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +72,16 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductsGrid(showFavorite: _showOnlyFavorite),
+      body: RefreshIndicator(
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ProductsGrid(showFavorite: _showOnlyFavorite),
+        onRefresh: () async =>
+            await Provider.of<ProductsProvider>(context, listen: false)
+                .loadProducts(),
+      ),
     );
   }
 }
