@@ -9,6 +9,7 @@ class Product with ChangeNotifier {
   final String description;
   final double price;
   final String imageUrl;
+  final String creatorId;
   bool _isFavorite = false;
 
   bool get isFavorite => _isFavorite;
@@ -18,7 +19,8 @@ class Product with ChangeNotifier {
         title = "",
         description = "",
         price = 0,
-        imageUrl = "";
+        imageUrl = "",
+        creatorId = "";
 
   Product({
     @required this.id,
@@ -26,19 +28,20 @@ class Product with ChangeNotifier {
     @required this.description,
     @required this.price,
     @required this.imageUrl,
+    @required this.creatorId,
     bool isFavorite = false,
   }) : _isFavorite = isFavorite;
 
-  Future<void> toggleFavorite() async {
+  Future<void> toggleFavorite(String authToken, String userId) async {
     // optimistic update
     this._isFavorite = !this.isFavorite;
     notifyListeners();
 
     // now do request
     final url = Uri.parse(
-        'https://flutter-shop-app-38383-default-rtdb.firebaseio.com/products/$id.json');
+        'https://flutter-shop-app-38383-default-rtdb.firebaseio.com/userFavorites/$userId/$id.json?auth=$authToken');
 
-    final response = await http.patch(
+    final response = await http.put(
       url,
       body: json.encode({'isFavorite': isFavorite}),
     );
@@ -55,6 +58,7 @@ class Product with ChangeNotifier {
     double price,
     String imageUrl,
     bool isFavorite,
+    String creatorId,
   }) {
     return Product(
       id: id ?? this.id,
@@ -63,6 +67,7 @@ class Product with ChangeNotifier {
       price: price ?? this.price,
       imageUrl: imageUrl ?? this.imageUrl,
       isFavorite: isFavorite ?? this.isFavorite,
+      creatorId: creatorId ?? this.creatorId,
     );
   }
 }

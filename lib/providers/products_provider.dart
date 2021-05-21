@@ -16,20 +16,41 @@ class ProductsProvider with ChangeNotifier {
   List<Product> get favoriteProducts =>
       List.unmodifiable(_products.where((e) => e.isFavorite).toList());
 
-  Future<void> loadProducts() async {
+  final String authToken;
+  final String userId;
+
+  ProductsProvider(this.authToken, this.userId, this._products);
+
+  Future<void> loadProducts([bool filterByCreator = false]) async {
     try {
       // try to prevent overwrite when there is an error
-      _products = await _fetchProducts();
+      _products = await _fetchProducts(filterByCreator);
       notifyListeners();
     } catch (error) {
       throw error;
     }
   }
 
-  Future<List<Product>> _fetchProducts() async {
-    final url = Uri.parse('$BASE_URL/products.json');
+  Future<Map<String, bool>> _fetchFavorites() async {
+    final url = Uri.parse(
+        'https://flutter-shop-app-38383-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken');
+
+    final response = await http.get(url);
+    final favoriteData = json.decode(response.body) as Map<String, dynamic>;
+
+    if (favoriteData == null) return {};
+
+    return favoriteData
+        .map((key, value) => MapEntry(key, value['isFavorite'] as bool));
+  }
+
+  Future<List<Product>> _fetchProducts(bool filterByCreator) async {
+    final filter =
+        filterByCreator ? '&orderBy="creatorId"&equalTo="$userId"' : "";
+    final url = Uri.parse('$BASE_URL/products.json?auth=$authToken$filter');
     final response = await http.get(url);
     final map = json.decode(response.body) as Map<String, dynamic>;
+    final favorites = await _fetchFavorites();
 
     return map.entries
         .map((e) => Product(
@@ -38,19 +59,20 @@ class ProductsProvider with ChangeNotifier {
               description: e.value['description'],
               price: e.value['price'],
               imageUrl: e.value['imageUrl'],
-              isFavorite: e.value['isFavorite'],
+              isFavorite: favorites.isEmpty ? false : favorites[e.key] ?? false,
+              creatorId: e.value['creatorId'],
             ))
         .toList();
   }
 
   Future<void> _addProduct(Product product) async {
-    final url = Uri.parse('$BASE_URL/products.json');
-    final response = await http.post(url, body: json.encode(toMap(product)));
+    final newProduct = product.copyWith(creatorId: userId);
+    final url = Uri.parse('$BASE_URL/products.json?auth=$authToken');
+    final response = await http.post(url, body: json.encode(toMap(newProduct)));
 
     if (response.statusCode == 200 && response.body.isNotEmpty) {
       final jsonBody = json.decode(response.body);
-      final newProduct = product.copyWith(id: jsonBody['name']);
-      _products.add(newProduct);
+      _products.add(newProduct.copyWith(id: jsonBody['name']));
       notifyListeners();
       return;
     }
@@ -63,13 +85,14 @@ class ProductsProvider with ChangeNotifier {
         'description': product.description,
         'imageUrl': product.imageUrl,
         'price': product.price,
-        'isFavorite': product.isFavorite
+        'creatorId': product.creatorId
       };
 
   Future<void> addOrUpdateProduct(Product product) async {
     final index = _products.indexWhere((element) => element.id == product.id);
     if (index >= 0) {
-      final url = Uri.parse('$BASE_URL/products/${product.id}.json');
+      final url =
+          Uri.parse('$BASE_URL/products/${product.id}.json?auth=$authToken');
       final response = await http.patch(url,
           body: json.encode(toMap(product.copyWith(isFavorite: false))));
 
@@ -84,7 +107,7 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String id) async {
-    final url = Uri.parse('$BASE_URL/products/$id.json');
+    final url = Uri.parse('$BASE_URL/products/$id.json?auth=$authToken');
 
     try {
       final response = await http.delete(url);

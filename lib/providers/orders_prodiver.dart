@@ -23,7 +23,11 @@ class Orders with ChangeNotifier {
   static const BASE_URL =
       'https://flutter-shop-app-38383-default-rtdb.firebaseio.com/';
 
+  final String authToken;
+  final String userId;
   List<OrderItem> _orders = [];
+
+  Orders(this.authToken, this.userId, this._orders);
 
   List<OrderItem> get orders => [..._orders];
 
@@ -42,7 +46,7 @@ class Orders with ChangeNotifier {
       );
 
   Future<void> loadOrders() async {
-    final url = Uri.parse('$BASE_URL/orders.json');
+    final url = Uri.parse('$BASE_URL/orders/$userId.json?auth=$authToken');
     final response = await http.get(url);
 
     if (response.statusCode >= 400)
@@ -64,7 +68,7 @@ class Orders with ChangeNotifier {
   }
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
-    final url = Uri.parse('$BASE_URL/orders.json');
+    final url = Uri.parse('$BASE_URL/orders/$userId.json?auth=$authToken');
     final timestamp = DateTime.now();
     final response = await http.post(
       url,
