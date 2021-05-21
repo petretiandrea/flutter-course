@@ -19,28 +19,34 @@ class _OrderItemState extends State<OrderItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          ListTile(
-            title: Text('\$${widget.item.amount}'),
-            subtitle: Text(
-              DateFormat('dd/MM/yyyy hh:mm').format(widget.item.dateTime),
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      height:
+          _expandend ? min(widget.item.products.length * 20.0 + 110, 200) : 92,
+      child: Card(
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            ListTile(
+              title: Text('\$${widget.item.amount}'),
+              subtitle: Text(
+                DateFormat('dd/MM/yyyy hh:mm').format(widget.item.dateTime),
+              ),
+              trailing: IconButton(
+                icon: Icon(_expandend ? Icons.expand_less : Icons.expand_more),
+                onPressed: () {
+                  setState(() {
+                    _expandend = !_expandend;
+                  });
+                },
+              ),
             ),
-            trailing: IconButton(
-              icon: Icon(_expandend ? Icons.expand_less : Icons.expand_more),
-              onPressed: () {
-                setState(() {
-                  _expandend = !_expandend;
-                });
-              },
-            ),
-          ),
-          if (_expandend)
-            Container(
+            AnimatedContainer(
+              duration: Duration(milliseconds: 300),
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-              height: min(widget.item.products.length * 20.0 + 14, 180),
+              height: _expandend
+                  ? min(widget.item.products.length * 20.0 + 14, 180)
+                  : 0,
               child: ListView(
                 children: widget.item.products
                     .map((e) => Row(
@@ -62,7 +68,8 @@ class _OrderItemState extends State<OrderItem> {
                     .toList(),
               ),
             )
-        ],
+          ],
+        ),
       ),
     );
   }
