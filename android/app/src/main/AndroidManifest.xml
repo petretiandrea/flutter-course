@@ -2,7 +2,8 @@
     package="com.example.flutter_course_1">
    <application
         android:label="flutter_course_1"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
